@@ -2,6 +2,7 @@
 {
     public string Key { get; set; }
     public string Title { get; set; }
+    public abstract bool IsVisible { get; }
 
     public Command(string key, string title)
     {

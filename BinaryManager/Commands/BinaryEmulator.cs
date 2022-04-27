@@ -1,26 +1,30 @@
-﻿public class BinaryEmulator : Command
+﻿using Microsoft.Extensions.Configuration;
+
+public class BinaryEmulator : Command
 {
-    private readonly string src;
-    private readonly string dest;
+    private readonly IConfiguration configuration;
     Dictionary<string, Command> commands;
+
+    public override bool IsVisible => false;
+
     public BinaryEmulator(
-        string key, 
-        string title, 
-        string src,
-        string dest, 
+        IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(key, title)
+        base(Statics.BINARYEMULATOR, Statics.BINARYEMULATOR)
     {
-        this.src = src;
-        this.dest = dest;
+        this.configuration = configuration;
         this.commands = commands;
     }
 
     public override string Do()
     {
+        Undo();
         try
         {
+            string src = configuration[Statics.BINROOT];
+            string dest = configuration[Statics.DESTROOT];
             int c = 1;
+
             foreach (var item in
             Directory.GetDirectories(src).
             Select(x => new DirectoryInfo(x)).
@@ -29,14 +33,14 @@
             ))))
             {
                 BinaryFile bf = new(
-                    c++.ToString(),
+                    $"c{c++}",
                     item.Name,
                     Path.Combine(item.FullName, Statics.FILENAME),
                     Path.Combine(dest, Statics.FILENAME));
                 commands.Add(bf);
             }
 
-            return $"{c} files loaded";
+            return $"{c} file(s) loaded";
         }
         catch
         {
@@ -52,6 +56,6 @@
             commands.Remove(item.Key);
         }
 
-        return $"{files.Count()} files unloaded";
+        return $"{files.Count()} file(s) unloaded";
     }
 }

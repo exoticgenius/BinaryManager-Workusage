@@ -2,7 +2,8 @@
 
 var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
 var Commands = new Dictionary<string, Command>();
-
+Commands.Add(new BinaryEmulator(conf,Commands));
+Commands.Add(new ProcessEmulator(conf, Commands));
 
 
 
