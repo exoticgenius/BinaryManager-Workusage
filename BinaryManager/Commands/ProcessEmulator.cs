@@ -12,7 +12,7 @@ public class ProcessEmulator : Command
     public ProcessEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> comands) :
-        base(Statics.PROCESSEMULATOR, Statics.PROCESSEMULATOR)
+        base(Statics.PROCESSEMULATORKEY, Statics.PROCESSEMULATOR)
     {
         this.configuration = configuration;
         this.commands = comands;
@@ -30,7 +30,7 @@ public class ProcessEmulator : Command
             commands.Add(killer);
         }
 
-        return $"{targets.Count} process target(s) loaded";
+        return $"{targets.Count} process(s) loaded";
     }
 
     public override string Undo()

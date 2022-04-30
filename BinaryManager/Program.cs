@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 
+using System.Collections.ObjectModel;
+using System.Threading.Channels;
+
+var channel = Channel.CreateUnbounded<Command>();
+ObservableCollection<string> output = new();
 var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
 var Commands = new Dictionary<string, Command>();
-Commands.Add(new BinaryEmulator(conf,Commands));
-Commands.Add(new ProcessEmulator(conf, Commands));
-
-
+bool MenuisVisible = await args.Aggregate(conf, Commands, channel.Writer);
+Task Executer = channel.CommandExecuter(output, MenuisVisible);
 
 
 

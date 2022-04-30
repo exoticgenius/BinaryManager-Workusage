@@ -3,7 +3,20 @@
   "DestRoot": "C:\\TFS\\dev\\SanatyarWeb",
   "Processes": [
     {
-      "iis": "Microsoft.VisualStudio.Web.Host.exe"
+      "Id": "iis",
+      "Name": "Microsoft.VisualStudio.Web.Host.exe"
+    }
+  ],
+  "Tasks": [
+    {
+      "Id": "copy binaries",
+      "Cmd": "c:\\x.bat"
+    }
+  ],
+  "Locations": [
+    {
+      "Source": "",
+      "Destination": ""
     }
   ]
 }

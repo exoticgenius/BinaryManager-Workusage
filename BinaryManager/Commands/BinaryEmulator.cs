@@ -10,7 +10,7 @@ public class BinaryEmulator : Command
     public BinaryEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(Statics.BINARYEMULATOR, Statics.BINARYEMULATOR)
+        base(Statics.BINARYEMULATORKEY, Statics.BINARYEMULATOR)
     {
         this.configuration = configuration;
         this.commands = commands;
