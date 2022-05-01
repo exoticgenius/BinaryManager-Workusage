@@ -15,10 +15,10 @@
     }
 
     public string PrintableTitle =>
-        $"{Key} : {Title}";
+        $"{string.Join(", ", Key)} : {Title}";
 
     public short Titlelength =>
-       (short)(Key.Length + Title.Length + 3);
+       (short)(Key.Select(x => x.Length).Sum() + ((Key.Length - 1) * 2) + Title.Length + 3);
 
     public abstract string Do();
     public abstract string Undo();

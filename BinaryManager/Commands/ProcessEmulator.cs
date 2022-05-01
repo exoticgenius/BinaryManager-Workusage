@@ -21,7 +21,7 @@ public class ProcessEmulator : Command
     public override string Do()
     {
         Undo();
-        var targets = JsonSerializer.Deserialize<List<TargetProcess>>(configuration[Statics.PROCESSES]) ?? new List<TargetProcess>();
+        var targets = configuration.GetSection(Statics.PROCESSES).Get<List<TargetProcess>>();
         int c = 1;
 
         foreach (var item in targets)

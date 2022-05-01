@@ -25,12 +25,13 @@ public class BinaryEmulator : Command
             string dest = configuration[Statics.DESTROOT];
             int c = 1;
 
-            foreach (var item in
-            Directory.GetDirectories(src).
+            var dirs = Directory.GetDirectories(src).
             Select(x => new DirectoryInfo(x)).
             Where(x =>
             File.Exists(Path.Combine(x.FullName, Statics.FILENAME
-            ))))
+            )));
+
+            foreach (var item in dirs)
             {
                 BinaryFile bf = new(
                     $"c{c++}",
@@ -40,7 +41,7 @@ public class BinaryEmulator : Command
                 commands.Add(bf);
             }
 
-            return $"{c} file(s) loaded";
+            return $"{c - 1} file(s) loaded";
         }
         catch
         {

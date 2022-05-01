@@ -21,7 +21,7 @@ public class TaskEmulator : Command
     public override string Do()
     {
         Undo();
-        var targets = JsonSerializer.Deserialize<List<TargetTask>>(configuration[Statics.PROCESSES]) ?? new List<TargetTask>();
+        var targets = configuration.GetSection(Statics.PROCESSES).Get<List<TargetTask>>();
         int c = 1;
 
         foreach (var item in targets)

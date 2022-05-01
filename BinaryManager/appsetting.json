@@ -10,7 +10,7 @@
   "Tasks": [
     {
       "Id": "copy binaries",
-      "Cmd": "c:\\x.bat"
+      "Cmd": "C:\\TFS\\batchs\\copyBranchDlls.bat"
     }
   ],
   "Locations": [
