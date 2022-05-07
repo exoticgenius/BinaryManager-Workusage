@@ -4,7 +4,7 @@
   "Processes": [
     {
       "Id": "iis",
-      "Data": "Microsoft.VisualStudio.Web.Host.exe"
+      "Data": "Microsoft.VisualStudio.Web.Host"
     }
   ],
   "Tasks": [
