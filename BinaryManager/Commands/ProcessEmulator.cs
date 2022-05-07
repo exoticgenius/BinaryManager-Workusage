@@ -2,31 +2,24 @@
 
 using System.Text.Json;
 
-public class ProcessEmulator : Command
+public class ProcessEmulator : Emulator
 {
-    private readonly IConfiguration configuration;
-    private readonly Dictionary<string, Command> commands;
-
-    public override bool IsVisible { get; }
-
     public ProcessEmulator(
         IConfiguration configuration,
-        Dictionary<string, Command> comands) :
-        base(Statics.PROCESSEMULATORKEY, Statics.PROCESSEMULATOR)
+        Dictionary<string, Command> commands) :
+        base(Statics.PROCESSEMULATORKEY, Statics.PROCESSEMULATOR,configuration,commands)
     {
-        this.configuration = configuration;
-        this.commands = comands;
     }
 
     public override string Do()
     {
         Undo();
-        var targets = configuration.GetSection(Statics.PROCESSES).Get<List<TargetProcess>>();
+        var targets = configuration.GetSection(Statics.PROCESSES).Get<List<Target>>();
         int c = 1;
 
         foreach (var item in targets)
         {
-            var killer = new ProcessKiller($"k{c++}", item.Id, item.Name);
+            var killer = new ProcessKiller($"k{c++}", item.Id, item.Data);
             commands.Add(killer);
         }
 

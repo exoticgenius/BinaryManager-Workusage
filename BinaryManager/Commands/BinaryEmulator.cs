@@ -1,19 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-public class BinaryEmulator : Command
+public class BinaryEmulator : Emulator
 {
-    private readonly IConfiguration configuration;
-    Dictionary<string, Command> commands;
-
-    public override bool IsVisible => false;
-
     public BinaryEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(Statics.BINARYEMULATORKEY, Statics.BINARYEMULATOR)
+        base(Statics.BINARYEMULATORKEY, Statics.BINARYEMULATOR,configuration,commands)
     {
-        this.configuration = configuration;
-        this.commands = commands;
     }
 
     public override string Do()

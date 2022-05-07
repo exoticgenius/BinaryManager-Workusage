@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using BinaryManager.Commands;
+
+using Microsoft.Extensions.Configuration;
 
 using System.Threading.Channels;
 
@@ -16,6 +18,11 @@ public static class Statics
 
     public const string TASKEMULATORKEY = "/t";
     public const string TASKEMULATOR = "TASKEMULATOR";
+    public const string TASKS = "Tasks";
+
+    public const string FILEEMULATORKEY = "/f";
+    public const string FILEEMULATOR = "FILEEMULATOR";
+    public const string FILELOCATIONES = "Locations";
 
 
     public static void Add<T, Y>(this Dictionary<T, Y> d, KeyValuePair<T, Y>[] kv)
@@ -24,100 +31,146 @@ public static class Statics
             d.Add(item.Key, item.Value);
     }
 
-    public static (int, int) GetCommandsSize(this Dictionary<string, Command> d) => (
-            Math.Min(
-                d.Values.Where(x => x.IsVisible).Select(x => x.Titlelength).Max(),
-                Console.WindowWidth - 35),
-            Math.Min(
-                d.Count,
-                Console.WindowHeight - 2)
-        );
-
-    public static async Task<bool> Aggregate(this string[] args, IConfiguration conf, Dictionary<string, Command> Commands, ChannelWriter<Command> channel)
+    public static async Task<bool> Aggregate(this string[] args, IConfiguration conf, Dictionary<string, Command> Commands, List<string> output, ChannelWriter<Command> channel)
     {
-        bool showMenu = false;
+        bool cliActive = false;
+        binaryEm(conf, Commands);
+        processEm(conf, Commands);
+        taskEm(conf, Commands);
 
         if (args.Length == 0)
         {
-            await binaryEm(conf, Commands, channel);
-            await processEm(conf, Commands, channel);
-            await taskEm(conf, Commands, channel);
-            showMenu = true;
-            return showMenu;
+            cliActive = true;
+            Commands.Add(new ConsoleWiper(output));
+            Commands.Add(new ExitApp());
+
+            foreach (var item in Commands.Where(x => x.Value is Emulator))
+            {
+                await channel.WriteAsync(item.Value);
+            }
         }
-        else if (args.Contains("/help"))
+        else
         {
-            showMenu = true;
-            return showMenu;
+            foreach (var item in args)
+            {
+                if (Commands.TryGetValue(item, out var cmd))
+                {
+                    if (cmd is Emulator) AutoCmd(cmd);
+                }
+            }
+            foreach (var item in args)
+            {
+                if (Commands.TryGetValue(item, out var cmd))
+                {
+                    if (cmd is not Emulator) AutoCmd(cmd);
+                }
+            }
         }
-        if (args.Contains(BINARYEMULATORKEY))
-        {
-            await binaryEm(conf, Commands, channel);
-        }
-        if (args.Contains(PROCESSEMULATORKEY))
-        {
-            await processEm(conf, Commands, channel);
-        }
-        if (args.Contains(TASKEMULATORKEY))
-        {
-            await taskEm(conf, Commands, channel);
-        }
-        return showMenu;
+
+        return cliActive;
     }
 
-    private static async Task taskEm(IConfiguration conf, Dictionary<string, Command> Commands, ChannelWriter<Command> channel)
+    private static void taskEm(IConfiguration conf, Dictionary<string, Command> Commands)
     {
         var em = new TaskEmulator(conf, Commands);
         Commands.Add(em);
-        await channel.WriteAsync(em);
     }
 
-    private static async Task processEm(IConfiguration conf, Dictionary<string, Command> Commands, ChannelWriter<Command> channel)
+    private static void processEm(IConfiguration conf, Dictionary<string, Command> Commands)
     {
         var em = new ProcessEmulator(conf, Commands);
         Commands.Add(em);
-        await channel.WriteAsync(em);
     }
 
-    private static async Task binaryEm(IConfiguration conf, Dictionary<string, Command> Commands, ChannelWriter<Command> channel)
+    private static void binaryEm(IConfiguration conf, Dictionary<string, Command> Commands)
     {
         var em = new BinaryEmulator(conf, Commands);
         Commands.Add(em);
-        await channel.WriteAsync(em);
     }
-    public static async Task CommandExecuter(this Channel<Command> channel, List<string> output, Dictionary<string, Command> commands, bool menuisVisible)
+
+    public static async Task TakeInputs(Channel<Command> channel, Dictionary<string, Command> Commands)
+    {
+        while (true)
+        {
+            string cmd = Console.ReadLine()!;
+            if (Commands.TryGetValue(cmd, out Command c))
+            {
+                await channel.Writer.WriteAsync(c);
+            }
+            else
+            {
+                await channel.Writer.WriteAsync(new NotFound(cmd));
+            }
+        }
+    }
+
+    public static async Task CommandExecuter(this Channel<Command> channel, List<string> output, Dictionary<string, Command> commands, bool cliActive)
     {
         await foreach (var item in channel.Reader.ReadAllAsync())
         {
-            try
+            if (cliActive)
             {
-                string result = item.Do();
-                output.Add(result);
+                RunCmd(output, item);
+                RenderWindow(commands, output);
             }
-            catch (Exception ex)
+            else
             {
-                output.Add(ex.Message);
+                AutoCmd(item);
             }
-            RenderWindow(commands, output);
         }
     }
+
+    private static void RunCmd(List<string> output, Command item)
+    {
+        try
+        {
+            string result = item.Do();
+            output.Add(result);
+        }
+        catch (Exception ex)
+        {
+            output.Add(ex.Message);
+        }
+    }
+
+    private static void AutoCmd(Command item)
+    {
+        try
+        {
+            string result = item.Do();
+            Console.WriteLine(result);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    static IEnumerable<string> ChunksUpto(string str, int maxChunkSize)
+    {
+        for (int i = 0; i < str.Length; i += maxChunkSize)
+            yield return str.Substring(i, Math.Min(maxChunkSize, str.Length - i)).PadRight(32);
+    }
+
     private static void RenderWindow(Dictionary<string, Command> commands, List<string> output)
     {
         try
         {
+            var visibleCmds = commands.Where(x => x.Value.IsVisible).GroupBy(x => x.Value.Key).Select(x => x.First()).ToList();
+
             string raw = "┌┐└┘┴┬│─";
             int width = Console.WindowWidth - 3;
 
             var o1 = output.
-                TakeLast(commands.Count);
+                TakeLast(visibleCmds.Count).ToList();
             var o2 = o1.
-                Select(s => Enumerable.Range(0, (int)Math.Ceiling(s.Length / 32.0)).
-                    Select(i => s.Length > 32 ? s.Substring(i * 32, 32) : s.PadRight(32)));
+                Select(s => ChunksUpto(s, 32))
+                    .ToList();
             var o3 = o2.
-                SelectMany(x => x);
+                SelectMany(x => x).ToList();
 
             var o4 = o3.
-                TakeLast(commands.Count);
+                TakeLast(visibleCmds.Count).ToList();
 
             var selectedOutput = new Queue<string>(o4);
 
@@ -128,7 +181,7 @@ public static class Statics
             Console.Clear();
 
             Console.WriteLine($"┌{s1}┬{s2}┐");
-            foreach (var item in commands.Where(x => x.Value.IsVisible).GroupBy(x => x.Value.Key).Select(x => x.First()))
+            foreach (var item in visibleCmds)
             {
                 string cmd = item.Value.PrintableTitle;
 
@@ -139,7 +192,7 @@ public static class Statics
             }
             Console.WriteLine($"└{s1}┴{s2}┘");
         }
-        catch(Exception e)
+        catch (Exception e)
         {
             Console.WriteLine(e.Message);
         }

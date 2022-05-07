@@ -2,31 +2,24 @@
 
 using System.Text.Json;
 
-public class TaskEmulator : Command
+public class TaskEmulator : Emulator
 {
-    private readonly IConfiguration configuration;
-    private readonly Dictionary<string, Command> commands;
-
     public TaskEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(Statics.TASKEMULATORKEY, Statics.TASKEMULATOR)
+        base(Statics.TASKEMULATORKEY, Statics.TASKEMULATOR,configuration,commands)
     {
-        this.configuration = configuration;
-        this.commands = commands;
     }
-
-    public override bool IsVisible => false;
 
     public override string Do()
     {
         Undo();
-        var targets = configuration.GetSection(Statics.PROCESSES).Get<List<TargetTask>>();
+        var targets = configuration.GetSection(Statics.TASKS).Get<List<Target>>();
         int c = 1;
 
         foreach (var item in targets)
         {
-            var task = new TaskRunner($"t{c++}", item.Id, item.Cmd);
+            var task = new TaskRunner($"t{c++}", item.Id, item.Data);
             commands.Add(task);
         }
 

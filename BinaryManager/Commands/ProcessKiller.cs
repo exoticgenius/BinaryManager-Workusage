@@ -4,7 +4,7 @@ public class ProcessKiller : Command
 {
     private readonly string processName;
 
-    public override bool IsVisible { get; }
+    public override bool IsVisible => true;
 
     public ProcessKiller(string key, string title, string processName) : base(new string[] { key, title }, title)
     {

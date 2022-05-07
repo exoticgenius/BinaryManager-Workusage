@@ -9,20 +9,10 @@ List<string> output = new();
 
 var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
 var Commands = new Dictionary<string, Command>();
-Commands.Add(new ConsoleWiper(output));
 
-bool MenuisVisible = await args.Aggregate(conf, Commands, channel.Writer);
-Task Executer = channel.CommandExecuter(output, Commands, MenuisVisible);
+bool CLIActive = await args.Aggregate(conf, Commands, output, channel.Writer);
+Task Executer = channel.CommandExecuter(output, Commands, CLIActive);
 
-while (true)
-{
-    string cmd = Console.ReadLine()!;
-    if(Commands.TryGetValue(cmd, out Command c))
-    {
-        await channel.Writer.WriteAsync(c);
-    }
-    else
-    {
-        await channel.Writer.WriteAsync(new NotFound(cmd));
-    }
-}
+if (!CLIActive) return;
+
+await Statics.TakeInputs(channel, Commands);

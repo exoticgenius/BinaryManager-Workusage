@@ -4,19 +4,20 @@
   "Processes": [
     {
       "Id": "iis",
-      "Name": "Microsoft.VisualStudio.Web.Host.exe"
+      "Data": "Microsoft.VisualStudio.Web.Host.exe"
     }
   ],
   "Tasks": [
     {
       "Id": "copy binaries",
-      "Cmd": "C:\\TFS\\batchs\\copyBranchDlls.bat"
+      "Data": "C:\\TFS\\batchs\\copyBranchDlls.bat"
     }
   ],
   "Locations": [
     {
-      "Source": "",
-      "Destination": ""
+      "Id": "Dll Files",
+      "Source": "\\\\fileserver\\Tfs_Output\\Distribution_Binaries\\Branches\\dev",
+      "Destination": "C:\\tfs\\dev\\distribution.binaries\\ProjectsBin"
     }
   ]
 }
