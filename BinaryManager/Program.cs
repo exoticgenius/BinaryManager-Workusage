@@ -3,17 +3,15 @@
 using System.Threading.Channels;
 
 var channel = Channel.CreateUnbounded<Command>();
-List<string> output = new();
 
 var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
-var Commands = new Dictionary<string, Command>();
 
-bool CLIActive = await args.Aggregate(conf, Commands, output, channel.Writer);
-Task Executer = channel.CommandExecuter(output, Commands, CLIActive);
+await args.Aggregate(conf, channel.Writer);
+Task Executer = channel.CommandExecuter();
 
-if (CLIActive)
-    Console.SetWindowSize(128, 32); 
-else 
-    return;
+if (Statics.CliActive)
+    Console.SetWindowSize(128, 32);
+else
+    channel.Writer.Complete();
 
-await Statics.TakeInputs(channel, Commands);
+await Statics.TakeInputs(channel);

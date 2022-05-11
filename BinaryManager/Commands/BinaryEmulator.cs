@@ -27,7 +27,7 @@ public class BinaryEmulator : Emulator
             foreach (var item in dirs)
             {
                 BinaryFile bf = new(
-                    $"c{c++}",
+                    $"b{c++}",
                     item.Name,
                     Path.Combine(item.FullName, Statics.FILENAME),
                     Path.Combine(dest, Statics.FILENAME));

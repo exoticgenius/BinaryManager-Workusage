@@ -24,6 +24,31 @@ public static class Statics
     public const string FILEEMULATOR = "FILEEMULATOR";
     public const string FILELOCATIONES = "Locations";
 
+    public static List<string> output = new();
+    public static Dictionary<string, Command> Commands = new();
+    public static Channel<string> Logger = Channel.CreateUnbounded<string>();
+    public static bool CliActive = false;
+
+    static Statics()
+    {
+        AggregateLogs();
+    }
+
+    private static async void AggregateLogs()
+    {
+        await foreach (var item in Logger.Reader.ReadAllAsync())
+        {
+            if (CliActive)
+            {
+                output.Add(item);
+                RenderWindow();
+            }
+            else
+            {
+                Console.WriteLine(item);
+            }
+        }
+    }
 
     public static void Add<T, Y>(this Dictionary<T, Y> d, KeyValuePair<T, Y>[] kv)
     {
@@ -31,16 +56,16 @@ public static class Statics
             d.Add(item.Key, item.Value);
     }
 
-    public static async Task<bool> Aggregate(this string[] args, IConfiguration conf, Dictionary<string, Command> Commands, List<string> output, ChannelWriter<Command> channel)
+    public static async Task Aggregate(this string[] args, IConfiguration conf, ChannelWriter<Command> channel)
     {
-        bool cliActive = false;
-        binaryEm(conf, Commands);
-        processEm(conf, Commands);
-        taskEm(conf, Commands);
+        Commands.Add(new BinaryEmulator(conf, Commands));
+        Commands.Add(new ProcessEmulator(conf, Commands));
+        Commands.Add(new TaskEmulator(conf, Commands));
+        Commands.Add(new FileEmulator(conf, Commands));
 
         if (args.Length == 0)
         {
-            cliActive = true;
+            CliActive = true;
             Commands.Add(new ConsoleWiper(output));
             Commands.Add(new ExitApp());
 
@@ -55,40 +80,36 @@ public static class Statics
             {
                 if (Commands.TryGetValue(item, out var cmd))
                 {
-                    if (cmd is Emulator) AutoCmd(cmd);
+                    if (cmd is Emulator)
+                        try
+                        {
+                            Log(cmd.Do());
+                        }
+                        catch(Exception ex)
+                        {
+                            Log(ex.Message);
+                        }
                 }
             }
             foreach (var item in args)
             {
                 if (Commands.TryGetValue(item, out var cmd))
                 {
-                    if (cmd is not Emulator) AutoCmd(cmd);
+                    if (cmd is not Emulator)
+                        try
+                        {
+                            Log(cmd.Do());
+                        }
+                        catch (Exception ex)
+                        {
+                            Log(ex.Message);
+                        }
                 }
             }
         }
-
-        return cliActive;
     }
 
-    private static void taskEm(IConfiguration conf, Dictionary<string, Command> Commands)
-    {
-        var em = new TaskEmulator(conf, Commands);
-        Commands.Add(em);
-    }
-
-    private static void processEm(IConfiguration conf, Dictionary<string, Command> Commands)
-    {
-        var em = new ProcessEmulator(conf, Commands);
-        Commands.Add(em);
-    }
-
-    private static void binaryEm(IConfiguration conf, Dictionary<string, Command> Commands)
-    {
-        var em = new BinaryEmulator(conf, Commands);
-        Commands.Add(em);
-    }
-
-    public static async Task TakeInputs(Channel<Command> channel, Dictionary<string, Command> Commands)
+    public static async Task TakeInputs(Channel<Command> channel)
     {
         while (true)
         {
@@ -104,59 +125,39 @@ public static class Statics
         }
     }
 
-    public static async Task CommandExecuter(this Channel<Command> channel, List<string> output, Dictionary<string, Command> commands, bool cliActive)
+    public static async Task CommandExecuter(this Channel<Command> channel)
     {
         await foreach (var item in channel.Reader.ReadAllAsync())
         {
-            if (cliActive)
+            try
             {
-                RunCmd(output, item);
-                RenderWindow(commands, output);
+                Log(item.Do());
             }
-            else
+            catch (Exception ex)
             {
-                AutoCmd(item);
+                Log(ex.Message);
             }
         }
+        Log("app shutting down ...");
+        new ExitApp().Do();
     }
 
-    private static void RunCmd(List<string> output, Command item)
+    public static async void Log(string result)
     {
-        try
-        {
-            string result = item.Do();
-            output.Add(result);
-        }
-        catch (Exception ex)
-        {
-            output.Add(ex.Message);
-        }
-    }
-
-    private static void AutoCmd(Command item)
-    {
-        try
-        {
-            string result = item.Do();
-            Console.WriteLine(result);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
+        await Logger.Writer.WriteAsync(result);
     }
 
     static IEnumerable<string> ChunksUpto(string str, int maxChunkSize)
     {
         for (int i = 0; i < str.Length; i += maxChunkSize)
-            yield return str.Substring(i, Math.Min(maxChunkSize, str.Length - i)).PadRight(32);
+            yield return str.Substring(i, Math.Min(maxChunkSize, str.Length - i)).Trim().PadRight(32);
     }
 
-    private static void RenderWindow(Dictionary<string, Command> commands, List<string> output)
+    private static void RenderWindow()
     {
         try
         {
-            var visibleCmds = commands.Where(x => x.Value.IsVisible).GroupBy(x => x.Value.Key).Select(x => x.First()).ToList();
+            var visibleCmds = Commands.Where(x => x.Value.IsVisible).GroupBy(x => x.Value.Key).Select(x => x.First()).ToList();
 
             string raw = "┌┐└┘┴┬│─";
             int width = Console.WindowWidth - 3;

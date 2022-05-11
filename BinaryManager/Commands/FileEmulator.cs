@@ -11,11 +11,25 @@ public class FileEmulator : Emulator
 
     public override string Do()
     {
-        throw new NotImplementedException();
+        var files = configuration.GetSection(Statics.FILELOCATIONES).Get<List<FileTarget>>();
+        int c = 1;
+        foreach (var item in files)
+        {
+            FileCopier copier = new($"f{c++}", item.Id, item.Source, item.Destination);
+            commands.Add(copier);
+        }
+
+        return $"{files.Count} location(s) loaded";
     }
 
     public override string Undo()
     {
-        throw new NotImplementedException();
+        var copiers = commands.Where(x => x.Value is FileCopier);
+        foreach (var item in copiers)
+        {
+            commands.Remove(item.Key);
+        }
+
+        return $"{copiers.Count()} location(s) unloaded";
     }
 }

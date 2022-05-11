@@ -15,7 +15,7 @@
   ],
   "Locations": [
     {
-      "Id": "Dll Files",
+      "Id": "dlls",
       "Source": "\\\\fileserver\\Tfs_Output\\Distribution_Binaries\\Branches\\dev",
       "Destination": "C:\\tfs\\dev\\distribution.binaries\\ProjectsBin"
     }
