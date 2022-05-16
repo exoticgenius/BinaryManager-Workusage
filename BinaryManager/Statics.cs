@@ -27,11 +27,15 @@ public static class Statics
     public static List<string> output = new();
     public static Dictionary<string, Command> Commands = new();
     public static Channel<string> Logger = Channel.CreateUnbounded<string>();
+    public static Channel<Command> channel = Channel.CreateUnbounded<Command>();
     public static bool CliActive = false;
+    private static int LoggedItems = 0;
 
     static Statics()
     {
         AggregateLogs();
+        Render();
+        CommandExecuter();
     }
 
     private static async void AggregateLogs()
@@ -41,12 +45,29 @@ public static class Statics
             if (CliActive)
             {
                 output.Add(item);
-                RenderWindow();
+                Interlocked.Increment(ref LoggedItems);
             }
             else
             {
                 Console.WriteLine(item);
             }
+        }
+    }
+
+    private static async void Render()
+    {
+        int fixer = 0;
+        while (true)
+        {
+            await Task.Delay(200);
+            if(LoggedItems > 0 || fixer > 25) 
+            { 
+                RenderWindow();
+                Interlocked.Exchange(ref LoggedItems, 0);
+                fixer = 0;
+                continue;
+            }
+            fixer++;
         }
     }
 
@@ -56,7 +77,7 @@ public static class Statics
             d.Add(item.Key, item.Value);
     }
 
-    public static async Task Aggregate(this string[] args, IConfiguration conf, ChannelWriter<Command> channel)
+    public static async Task Aggregate(this string[] args, IConfiguration conf)
     {
         Commands.Add(new BinaryEmulator(conf, Commands));
         Commands.Add(new ProcessEmulator(conf, Commands));
@@ -71,7 +92,7 @@ public static class Statics
 
             foreach (var item in Commands.Where(x => x.Value is Emulator))
             {
-                await channel.WriteAsync(item.Value);
+                await channel.Writer.WriteAsync(item.Value);
             }
         }
         else
@@ -109,7 +130,7 @@ public static class Statics
         }
     }
 
-    public static async Task TakeInputs(Channel<Command> channel)
+    public static async Task TakeInputs()
     {
         while (true)
         {
@@ -125,7 +146,7 @@ public static class Statics
         }
     }
 
-    public static async Task CommandExecuter(this Channel<Command> channel)
+    public static async void CommandExecuter()
     {
         await foreach (var item in channel.Reader.ReadAllAsync())
         {

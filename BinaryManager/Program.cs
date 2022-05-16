@@ -2,14 +2,13 @@
 
 using System.Threading.Channels;
 
-var channel = Channel.CreateUnbounded<Command>();
+
 
 var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
 
-await args.Aggregate(conf, channel.Writer);
-Task Executer = channel.CommandExecuter();
+await args.Aggregate(conf);
 
 if (!Statics.CliActive)
-    channel.Writer.Complete();
+    Statics.channel.Writer.Complete();
 
-await Statics.TakeInputs(channel);
+await Statics.TakeInputs();
