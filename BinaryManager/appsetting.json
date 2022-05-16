@@ -1,6 +1,15 @@
 ﻿{
   "BinRoot": "C:\\TFS\\binary",
-  "DestRoot": "C:\\TFS\\dev\\SanatyarWeb",
+  "DestRoots": [
+    {
+      "Id": "Dev",
+      "Data": "C:\\TFS\\dev\\SanatyarWeb"
+    },
+    {
+      "Id": "Main",
+      "Data": "C:\\TFS\\Main\\SanatyarWeb"
+    }
+  ],
   "Processes": [
     {
       "Id": "iis",

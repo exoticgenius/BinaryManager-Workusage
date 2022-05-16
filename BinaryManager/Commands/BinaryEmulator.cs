@@ -5,7 +5,7 @@ public class BinaryEmulator : Emulator
     public BinaryEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(Statics.BINARYEMULATORKEY, Statics.BINARYEMULATOR,configuration,commands)
+        base(Statics.BINARYEMULATORKEY, Statics.BINARYEMULATOR, configuration, commands)
     {
     }
 
@@ -15,7 +15,7 @@ public class BinaryEmulator : Emulator
         try
         {
             string src = configuration[Statics.BINROOT];
-            string dest = configuration[Statics.DESTROOT];
+            List<Target> dests = configuration.GetSection(Statics.DESTROOTS).Get<List<Target>>();
             int c = 1;
 
             var dirs = Directory.GetDirectories(src).
@@ -26,15 +26,18 @@ public class BinaryEmulator : Emulator
 
             foreach (var item in dirs)
             {
-                BinaryFile bf = new(
-                    $"b{c++}",
-                    item.Name,
-                    Path.Combine(item.FullName, Statics.FILENAME),
-                    Path.Combine(dest, Statics.FILENAME));
-                commands.Add(bf);
+                foreach (var dest in dests)
+                {
+                    BinaryFile bf = new(
+                        $"b{c++}",
+                        $"{item.Name}_to_{dest.Id}",
+                        Path.Combine(item.FullName, Statics.FILENAME),
+                        Path.Combine(dest.Data, Statics.FILENAME));
+                    commands.Add(bf);
+                }
             }
 
-            return $"{c - 1} file(s) loaded";
+            return $"{c - 1} binary file(s) loaded";
         }
         catch
         {
@@ -50,6 +53,6 @@ public class BinaryEmulator : Emulator
             commands.Remove(item.Key);
         }
 
-        return $"{files.Count()} file(s) unloaded";
+        return $"{files.Count()} binary file(s) unloaded";
     }
 }

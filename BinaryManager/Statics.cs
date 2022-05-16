@@ -10,7 +10,7 @@ public static class Statics
     public const string BINARYEMULATOR = "BINARYEMULATOR";
     public const string FILENAME = "binary.dll";
     public const string BINROOT = "BinRoot";
-    public const string DESTROOT = "DestRoot";
+    public const string DESTROOTS = "DestRoots";
 
     public const string PROCESSEMULATORKEY = "/p";
     public const string PROCESSEMULATOR = "PROCESSEMULATOR";
