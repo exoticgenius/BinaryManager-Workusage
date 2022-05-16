@@ -15,6 +15,7 @@ public class ConsoleWiper : Command
     public override string Do()
     {
         output.Clear();
+        Console.Clear();
         return string.Empty;
     }
 

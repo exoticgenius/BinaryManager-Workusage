@@ -9,9 +9,7 @@ var conf = new ConfigurationBuilder().AddJsonFile("appsetting.json").Build();
 await args.Aggregate(conf, channel.Writer);
 Task Executer = channel.CommandExecuter();
 
-if (Statics.CliActive)
-    Console.SetWindowSize(128, 32);
-else
+if (!Statics.CliActive)
     channel.Writer.Complete();
 
 await Statics.TakeInputs(channel);
