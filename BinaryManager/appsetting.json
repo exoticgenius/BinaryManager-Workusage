@@ -2,11 +2,11 @@
   "BinRoot": "C:\\TFS\\binary",
   "DestRoots": [
     {
-      "Id": "Dev",
+      "Id": "dev",
       "Data": "C:\\TFS\\dev\\SanatyarWeb"
     },
     {
-      "Id": "Main",
+      "Id": "main",
       "Data": "C:\\TFS\\Main\\SanatyarWeb"
     }
   ],
@@ -24,9 +24,14 @@
   ],
   "Locations": [
     {
-      "Id": "dlls",
+      "Id": "dev",
       "Source": "\\\\fileserver\\Tfs_Output\\Distribution_Binaries\\Branches\\dev",
       "Destination": "C:\\tfs\\dev\\distribution.binaries\\ProjectsBin"
+    },
+    {
+      "Id": "main",
+      "Source": "\\\\fileserver\\Tfs_Output\\Distribution_Binaries\\Main",
+      "Destination": "C:\\tfs\\Main\\distribution.binaries\\ProjectsBin"
     }
   ]
 }
