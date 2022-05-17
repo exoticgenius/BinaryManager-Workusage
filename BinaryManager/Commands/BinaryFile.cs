@@ -5,7 +5,7 @@
 
     public override bool IsVisible => true;
 
-    public BinaryFile(string key, string title, string src, string dest) : base(new string[] { key, title }, title)
+    public BinaryFile(string[] key, string title, string src, string dest) : base(key, title)
     {
         this.src = src;
         this.dest = dest;

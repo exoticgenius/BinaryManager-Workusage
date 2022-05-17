@@ -15,7 +15,12 @@ public class FileEmulator : Emulator
         int c = 1;
         foreach (var item in files)
         {
-            FileCopier copier = new($"f{c++}", item.Id, item.Source, item.Destination);
+            string[] keys = new string[]
+            {
+                $"f{c++}",
+                item.Id
+            };
+            FileCopier copier = new(keys, $"perform copy to {item.Id}", item.Source, item.Destination);
             commands.Add(copier);
         }
 

@@ -7,7 +7,7 @@ public class TaskEmulator : Emulator
     public TaskEmulator(
         IConfiguration configuration,
         Dictionary<string, Command> commands) :
-        base(Statics.TASKEMULATORKEY, Statics.TASKEMULATOR,configuration,commands)
+        base(Statics.TASKEMULATORKEY, Statics.TASKEMULATOR, configuration, commands)
     {
     }
 
@@ -19,7 +19,12 @@ public class TaskEmulator : Emulator
 
         foreach (var item in targets)
         {
-            var task = new TaskRunner($"t{c++}", item.Id, item.Data);
+            string[] keys = new string[]
+            {
+                $"t{c++}",
+                item.Id
+            };
+            var task = new TaskRunner(keys, $"run {item.Id} task", item.Data);
             commands.Add(task);
         }
 

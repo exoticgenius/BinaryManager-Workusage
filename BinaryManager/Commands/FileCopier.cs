@@ -3,7 +3,7 @@
     private readonly string source;
     private readonly string dest;
 
-    public FileCopier(string key, string title,string source, string dest) : base(new string[] {key, title}, title)
+    public FileCopier(string[] key, string title,string source, string dest) : base(key, title)
     {
         this.source = source;
         this.dest = dest;

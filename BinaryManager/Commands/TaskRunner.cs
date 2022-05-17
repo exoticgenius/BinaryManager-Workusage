@@ -4,7 +4,7 @@ public class TaskRunner : Command
 {
     private readonly string cmd;
 
-    public TaskRunner(string key, string title, string cmd) : base(new string[] { key, title }, title)
+    public TaskRunner(string[] key, string title, string cmd) : base(key, title)
     {
         this.cmd = cmd;
     }

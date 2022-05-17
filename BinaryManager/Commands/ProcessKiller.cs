@@ -6,7 +6,7 @@ public class ProcessKiller : Command
 
     public override bool IsVisible => true;
 
-    public ProcessKiller(string key, string title, string processName) : base(new string[] { key, title }, title)
+    public ProcessKiller(string[] key, string title, string processName) : base(key, title)
     {
         this.processName = processName;
     }

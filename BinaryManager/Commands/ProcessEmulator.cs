@@ -19,7 +19,12 @@ public class ProcessEmulator : Emulator
 
         foreach (var item in targets)
         {
-            var killer = new ProcessKiller($"k{c++}", item.Id, item.Data);
+            string[] keys = new string[]
+            {
+                $"k{c++}",
+                item.Id
+            };
+            var killer = new ProcessKiller(keys,$"kill {item.Id}", item.Data);
             commands.Add(killer);
         }
 

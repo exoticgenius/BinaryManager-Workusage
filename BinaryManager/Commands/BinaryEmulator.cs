@@ -28,9 +28,14 @@ public class BinaryEmulator : Emulator
             {
                 foreach (var dest in dests)
                 {
-                    BinaryFile bf = new(
+                    string[] keys = new string[]
+                    {
                         $"b{c++}",
-                        $"{item.Name}_to_{dest.Id}",
+                        $"{item.Name}_to_{dest.Id}" 
+                    };
+                    BinaryFile bf = new(
+                        keys,
+                        $"copy {item.Name} binary to {dest.Id}",
                         Path.Combine(item.FullName, Statics.FILENAME),
                         Path.Combine(dest.Data, Statics.FILENAME));
                     commands.Add(bf);

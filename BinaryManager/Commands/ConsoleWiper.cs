@@ -5,7 +5,7 @@ public class ConsoleWiper : Command
     private readonly List<string> output;
 
     public ConsoleWiper(
-    List<string> output) : base("cls", "Refresh")
+    List<string> output) : base(new string[] { "cls", "c" }, "Refresh")
     {
         this.output = output;
     }

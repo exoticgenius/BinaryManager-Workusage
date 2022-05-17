@@ -56,18 +56,14 @@ public static class Statics
 
     private static async void Render()
     {
-        int fixer = 0;
         while (true)
         {
             await Task.Delay(200);
-            if(LoggedItems > 0 || fixer > 25) 
+            if(LoggedItems > 0) 
             { 
-                RenderWindow();
                 Interlocked.Exchange(ref LoggedItems, 0);
-                fixer = 0;
-                continue;
+                RenderWindow();
             }
-            fixer++;
         }
     }
 
@@ -210,7 +206,7 @@ public static class Statics
                 if (cmd.Length > width - 32) cmd = cmd.Substring(0, width - 32);
                 else cmd = cmd.PadRight(width - 32);
 
-                Console.WriteLine($"│{cmd}|{(selectedOutput.Count > 0 ? selectedOutput.Dequeue() : new string(' ', 32))}|");
+                Console.WriteLine($"│{cmd}│{(selectedOutput.Count > 0 ? selectedOutput.Dequeue() : new string(' ', 32))}│");
             }
             Console.WriteLine($"└{s1}┴{s2}┘");
         }
